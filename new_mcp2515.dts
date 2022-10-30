@@ -1,0 +1,51 @@
+/dts-v1/;
+/plugin/; 
+
+/ {
+    compatible = "allwinner,sun50i-h616";
+
+    fragment@0 {
+        target-path = "/";
+        __overlay__ {
+            can0_osc_fixed: can0_osc_fixed {
+				compatible = "fixed-clock";
+				#clock-cells = <0>;
+				clock-frequency  = <8000000>;
+			};
+        };
+    };
+
+    fragment@1 {
+        target = <&pio>;
+        __overlay__ {
+            can0_pin_irq: can0_pin_irq {
+				pins = "PC10";
+				function = "irq";
+				bias-pull-up;
+			};
+        };
+    };
+
+    fragment@2 {
+        target = <&spi1>;
+        __overlay__ {
+            #address-cells = <1>;
+			#size-cells = <0>;
+			cs-gpios = <0>, <0>, <&pio 2 9 0>;
+			num-cs = <3>;
+			status = "okay";
+			
+			mcp2515@2 {
+				reg = <2>;
+				compatible = "microchip,mcp2515";
+				pinctrl-names = "default";
+				pinctrl-0 = <&can0_pin_irq>;
+				spi-max-frequency = <10000000>;
+				interrupt-parent = <&pio>;
+				interrupts = <2 10 0x08>; /* PC10 IRQ_TYPE_LEVEL_LOW */
+				clocks = <&can0_osc_fixed>;
+				status = "okay";
+			};
+        };
+    };
+};
